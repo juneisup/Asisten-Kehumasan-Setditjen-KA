@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asisten Kehumasan & Komunikasi Publik - Setditjen Perkeretaapian</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            djka: {
+              navy: '#0F294A',
+              navyLight: '#1B3D6B',
+              navyDark: '#091A30',
+              orange: '#E65100',
+              orangeHover: '#BF360C',
+              amberBg: '#FFF3E0',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Custom scrollbar for clean UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-djka-navy text-white shadow-md sticky top-0 z-30 border-b-4 border-djka-orange">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <!-- Emblem / Icon -->
+        <div class="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+          <i data-lucide="train-front" class="w-6 h-6 text-amber-400"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-djka-orange text-white">
+              Setditjen Perkeretaapian
+            </span>
+            <span class="hidden sm:inline-flex items-center gap-1 text-xs text-slate-300">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              AI Agent Kehumasan
+            </span>
+          </div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white mt-0.5">
+            Asisten Kehumasan & Komunikasi Publik
+          </h1>
+        </div>
+      </div>
+
+      <!-- Right Actions: AI Studio Export & Status -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button
+          onclick="openAiStudioModal()"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs sm:text-sm font-medium text-white transition cursor-pointer"
+          title="Lihat System Prompt & Panduan Integrasi Google AI Studio"
+        >
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+          <span>Panduan Google AI Studio</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300">
+    <div class="bg-djka-navy text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-sm font-medium">
+      <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+      <span id="toast-message">Berhasil disalin ke clipboard!</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT WORKSPACE -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Brief Banner Info -->
+    <div class="mb-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <div class="p-2 rounded-xl bg-blue-50 text-djka-navy shrink-0 mt-0.5">
+          <i data-lucide="zap" class="w-5 h-5 text-djka-orange"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-djka-navy">Percepat Rilis Publik dari 2 Hari Menjadi Hitungan Menit</h2>
+          <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
+            Tempelkan laporan teknis atau log WhatsApp lapangan yang belum rapi. AI akan menyusun kronologi 5W+1H, draf <em>Holding Statement</em>, Siaran Pers, analisis sensitivitas isu, serta pesan pengantar WA pimpinan.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          onclick="loadSampleCase()"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-djka-orange border border-amber-200 text-xs font-semibold transition cursor-pointer"
+        >
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Muat Contoh Kasus</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TWO-COLUMN GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN: INPUT & KNOWLEDGE BASE (5 cols) -->
+      <div class="lg:col-span-5 space-y-5">
+
+        <!-- CARD 1: INPUT DATA LAPANGAN -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="bg-slate-50 border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-djka-navy text-white text-xs font-bold flex items-center justify-center">1</span>
+              <h3 class="font-bold text-sm text-djka-navy">Data Lapangan & Kronologi Mentah</h3>
+            </div>
+            <button
+              onclick="clearInput()"
+              class="text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 transition cursor-pointer"
+            >
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Bersihkan</span>
+            </button>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <!-- Context / Sensitivity Selector -->
+            <div>
+              <label for="contextType" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                Kategori & Tingkat Sensitivitas Awal
+              </label>
+              <select
+                id="contextType"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-djka-navy/20 focus:border-djka-navy transition"
+              >
+                <option value="Insiden Operasional / Gangguan Perjalanan (Sensitivitas Tinggi)">
+                  Insiden Operasional / Gangguan Perjalanan (Sensitivitas Tinggi)
+                </option>
+                <option value="Keluhan Publik / Viral di Media Sosial (Sensitivitas Sedang-Tinggi)">
+                  Keluhan Publik / Viral di Media Sosial (Sensitivitas Sedang–Tinggi)
+                </option>
+                <option value="Kebijakan Baru / Penyesuaian Tarif & Grafik Perjalanan (Sensitivitas Sedang)">
+                  Kebijakan Baru / Penyesuaian Tarif & GAPEKA (Sensitivitas Sedang)
+                </option>
+                <option value="Capaian Kinerja / Peresmian Prasarana (Sensitivitas Rendah)">
+                  Capaian Kinerja / Peresmian Prasarana (Sensitivitas Rendah)
+                </option>
+              </select>
+            </div>
+
+            <!-- Raw Field Textarea -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="rawFieldData" class="block text-xs font-semibold text-slate-700">
+                  Salinan Chat WhatsApp / Laporan Teknis Balai
+                </label>
+                <span id="charCount" class="text-[11px] text-slate-400">0 karakter</span>
+              </div>
+              <textarea
+                id="rawFieldData"
+                rows="10"
+                oninput="updateCharCount()"
+                placeholder="Tempelkan laporan dari grup WhatsApp teknis, kronologi dari Balai Teknik Perkeretaapian, atau catatan lapangan di sini..."
+                class="w-full rounded-xl border border-slate-300 p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-djka-navy/20 focus:border-djka-navy transition leading-relaxed"
+              ></textarea>
+            </div>
+
+            <!-- Optional: Google Docs Link Input -->
+            <div>
+              <label for="gdocsLink" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                Tautan Google Docs Kolaborasi <span class="text-slate-400 font-normal">(Opsional - untuk pesan WA Pimpinan)</span>
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i data-lucide="link" class="w-4 h-4 text-slate-400"></i>
+                </div>
+                <input
+                  type="url"
+                  id="gdocsLink"
+                  placeholder="https://docs.google.com/document/d/..."
+                  class="w-full rounded-xl border border-slate-300 pl-9 pr-3.5 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-djka-navy/20 focus:border-djka-navy transition"
+                />
+              </div>
+            </div>
+
+            <!-- Primary Generate Button -->
+            <button
+              id="generateBtn"
+              onclick="generatePRPackage()"
+              class="w-full py-3.5 px-5 rounded-xl bg-djka-orange hover:bg-djka-orangeHover text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <i data-lucide="wand-2" class="w-5 h-5"></i>
+              <span>Proses & Susun Naskah</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- CARD 2: KNOWLEDGE BASE / PEDOMAN KEHUMASAN (COLLAPSIBLE) -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <button
+            type="button"
+            onclick="toggleKnowledgeBase()"
+            class="w-full bg-slate-50 hover:bg-slate-100/80 border-b border-slate-200 px-5 py-3.5 flex items-center justify-between text-left transition cursor-pointer"
+          >
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-djka-navy/10 text-djka-navy text-xs font-bold flex items-center justify-center">
+                <i data-lucide="book-open-check" class="w-3.5 h-3.5"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-sm text-djka-navy">Basis Pengetahuan & Pedoman Krisis</h3>
+                <p class="text-[11px] text-slate-500">Aturan nada bahasa & filter sensitivitas isu DJKA</p>
+              </div>
+            </div>
+            <i id="kbChevron" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200"></i>
+          </button>
+
+          <div id="kbContent" class="hidden p-5 space-y-3 bg-slate-50/40">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700">Pedoman Internal (Dapat Disesuaikan):</span>
+              <button
+                onclick="resetKnowledgeBase()"
+                class="text-[11px] text-djka-navy hover:underline font-medium cursor-pointer"
+              >
+                Kembalikan Default
+              </button>
+            </div>
+            <textarea
+              id="knowledgeBaseRules"
+              rows="7"
+              class="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-djka-navy/20 focus:border-djka-navy"
+            ></textarea>
+            <p class="text-[11px] text-slate-500 flex items-start gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-djka-navy shrink-0 mt-0.5"></i>
+              <span>AI menggunakan pedoman di atas sebagai acuan utama agar naskah tidak menyalahi etika komunikasi publik dan regulasi perkeretaapian.</span>
+            </p>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN: AI GENERATED OUTPUTS (7 cols) -->
+      <div class="lg:col-span-7">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[580px] flex flex-col">
+
+          <!-- Output Header & 4 Tabs -->
+          <div class="bg-djka-navy text-white px-5 pt-4 pb-0">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-djka-orange text-white text-xs font-bold flex items-center justify-center">2</span>
+                <h3 class="font-bold text-sm sm:text-base">Hasil Analisis & Draf Naskah AI Agent</h3>
+              </div>
+              <span id="statusBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 text-slate-200 font-medium">
+                Menunggu Input
+              </span>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex overflow-x-auto gap-1 -mx-1 px-1 pb-0 no-scrollbar" role="tablist">
+              <button
+                id="tab-btn-1"
+                onclick="switchTab(1)"
+                class="tab-btn px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 border-djka-orange bg-white text-djka-navy whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <i data-lucide="list-ordered" class="w-3.5 h-3.5 text-djka-orange"></i>
+                <span>1. Kronologi 5W+1H</span>
+              </button>
+              <button
+                id="tab-btn-2"
+                onclick="switchTab(2)"
+                class="tab-btn px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-300 hover:text-white hover:bg-white/10 whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <i data-lucide="newspaper" class="w-3.5 h-3.5"></i>
+                <span>2. Siaran Pers & Holding</span>
+              </button>
+              <button
+                id="tab-btn-3"
+                onclick="switchTab(3)"
+                class="tab-btn px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-300 hover:text-white hover:bg-white/10 whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                <span>3. Filter Sensitivitas Isu</span>
+              </button>
+              <button
+                id="tab-btn-4"
+                onclick="switchTab(4)"
+                class="tab-btn px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-300 hover:text-white hover:bg-white/10 whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>4. Ringkasan WA Pimpinan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Output Body Container -->
+          <div class="p-5 sm:p-6 flex-1 flex flex-col">
+
+            <!-- EMPTY STATE -->
+            <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center py-12 px-4">
+              <div class="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
+                <i data-lucide="bot" class="w-8 h-8 text-djka-navy"></i>
+              </div>
+              <h4 class="text-base font-bold text-djka-navy">Siap Membantu Menyusun Naskah Kehumasan</h4>
+              <p class="text-xs sm:text-sm text-slate-500 max-w-md mt-1.5 leading-relaxed">
+                Masukkan laporan teknis atau potongan pesan WhatsApp di panel sebelah kiri, lalu klik <strong class="text-slate-700">"Proses & Susun Naskah"</strong>. Anda juga dapat mencoba langsung dengan tombol <strong class="text-djka-orange">"Muat Contoh Kasus"</strong>.
+              </p>
+            </div>
+
+            <!-- LOADING STATE -->
+            <div id="loadingState" class="hidden flex-1 flex flex-col items-center justify-center text-center py-12 px-4">
+              <div class="relative w-14 h-14 mb-4">
+                <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-djka-orange border-t-transparent animate-spin"></div>
+              </div>
+              <h4 class="text-base font-bold text-djka-navy">AI Agent Sedang Menganalisis Data Lapangan...</h4>
+              <p id="loadingStepText" class="text-xs text-slate-500 mt-1.5">
+                Menyusun kronologi 5W+1H, memeriksa sensitivitas isu, dan menyusun draf siaran pers...
+              </p>
+            </div>
+
+            <!-- ERROR STATE -->
+            <div id="errorState" class="hidden flex-1 flex flex-col items-center justify-center text-center py-10 px-4">
+              <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center mb-3">
+                <i data-lucide="alert-triangle" class="w-7 h-7 text-red-600"></i>
+              </div>
+              <h4 class="text-base font-bold text-red-800">Gagal Memproses Permintaan</h4>
+              <p id="errorMessage" class="text-xs text-red-600 max-w-md mt-1 leading-relaxed">
+                Terjadi kendala saat menghubungi layanan Gemini API.
+              </p>
+              <button
+                onclick="generatePRPackage()"
+                class="mt-4 px-4 py-2 rounded-xl bg-djka-navy text-white text-xs font-semibold hover:bg-djka-navyLight transition cursor-pointer"
+              >
+                Coba Lagi
+              </button>
+            </div>
+
+            <!-- RESULTS CONTAINER -->
+            <div id="resultsContainer" class="hidden space-y-5">
+
+              <!-- TAB 1: KRONOLOGI 5W+1H -->
+              <div id="tab-panel-1" class="tab-panel space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+                  <div>
+                    <h4 class="font-bold text-djka-navy text-sm sm:text-base">Ekstraksi Kronologi Terstruktur (5W + 1H)</h4>
+                    <p class="text-xs text-slate-500">Fakta kunci yang dirangkum dari laporan mentah lapangan</p>
+                  </div>
+                  <button
+                    onclick="copySection('kronologiText', this)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
+                  >
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span>Salin 5W+1H</span>
+                  </button>
+                </div>
+
+                <div id="kronologiCards" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <!-- Populated dynamically -->
+                </div>
+                <textarea id="kronologiText" class="sr-only" readonly></textarea>
+              </div>
+
+              <!-- TAB 2: DRAF SIARAN PERS & HOLDING STATEMENT -->
+              <div id="tab-panel-2" class="tab-panel hidden space-y-6">
+                <!-- Holding Statement Box -->
+                <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 sm:p-5 space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-0.5 rounded-md bg-djka-orange text-white text-[11px] font-bold uppercase">
+                        Respons Cepat
+                      </span>
+                      <h4 class="font-bold text-djka-navy text-sm">Holding Statement (Pernyataan Awal)</h4>
+                    </div>
+                    <button
+                      onclick="copySection('holdingStatementOutput', this)"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-djka-orange border border-amber-200 text-xs font-semibold transition cursor-pointer"
+                    >
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                      <span>Salin Holding Statement</span>
+                    </button>
+                  </div>
+                  <p class="text-xs text-slate-600">
+                    Gunakan pernyataan singkat ini jika media sudah mulai bertanya sementara investigasi teknis masih berlangsung.
+                  </p>
+                  <div
+                    id="holdingStatementDisplay"
+                    class="bg-white rounded-xl border border-amber-200/80 p-4 text-sm text-slate-800 leading-relaxed whitespace-pre-line"
+                  ></div>
+                  <textarea id="holdingStatementOutput" class="sr-only" readonly></textarea>
+                </div>
+
+                <!-- Siaran Pers Box -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-0.5 rounded-md bg-djka-navy text-white text-[11px] font-bold uppercase">
+                        Naskah Lengkap
+                      </span>
+                      <h4 class="font-bold text-djka-navy text-sm">Draf Siaran Pers Resmi DJKA</h4>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <button
+                        onclick="copySection('pressReleaseOutput', this)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-djka-navy hover:bg-djka-navyLight text-white text-xs font-semibold transition cursor-pointer"
+                      >
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span>Salin Siaran Pers</span>
+                      </button>
+                      <button
+                        onclick="copyAndOpenGoogleDocs()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition cursor-pointer"
+                        title="Salin naskah & buka Google Docs baru"
+                      >
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span>Salin & Buka Google Docs</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    id="pressReleaseDisplay"
+                    class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 text-sm text-slate-800 leading-relaxed whitespace-pre-line font-normal"
+                  ></div>
+                  <textarea id="pressReleaseOutput" class="sr-only" readonly></textarea>
+                </div>
+              </div>
+
+              <!-- TAB 3: PEMERIKSA SENSITIVITAS ISU (FILTER RISIKO) -->
+              <div id="tab-panel-3" class="tab-panel hidden space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                  <div>
+                    <h4 class="font-bold text-djka-navy text-sm sm:text-base">Analisis Sensitivitas & Mitigasi Risiko Isu</h4>
+                    <p class="text-xs text-slate-500">Deteksi dini kalimat sensitif sebelum diajukan untuk persetujuan pimpinan</p>
+                  </div>
+                  <div id="riskLevelContainer">
+                    <!-- Risk Badge inserted dynamically -->
+                  </div>
+                </div>
+
+                <!-- Summary of Risk -->
+                <div id="riskSummaryBox" class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                </div>
+
+                <!-- Sensitive Points List -->
+                <div class="space-y-3">
+                  <h5 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Poin Perhatian & Rekomendasi Penghalusan Kalimat
+                  </h5>
+                  <div id="riskItemsList" class="space-y-3">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 4: RINGKASAN EKSEKUTIF (SIAP KIRIM WA PIMPINAN) -->
+              <div id="tab-panel-4" class="tab-panel hidden space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+                  <div>
+                    <h4 class="font-bold text-djka-navy text-sm sm:text-base">Pesan Pengantar Approval (WhatsApp Pimpinan)</h4>
+                    <p class="text-xs text-slate-500">Format ringkas siap kirim untuk mempercepat persetujuan berjenjang</p>
+                  </div>
+                  <button
+                    onclick="copySection('waExecutiveOutput', this)"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                  >
+                    <i data-lucide="message-square-share" class="w-4 h-4"></i>
+                    <span>Salin Pesan WA</span>
+                  </button>
+                </div>
+
+                <!-- WhatsApp Preview Bubble -->
+                <div class="bg-[#E5DDD5] p-4 sm:p-5 rounded-2xl border border-slate-300">
+                  <div class="bg-[#DCF8C6] rounded-2xl rounded-tr-none p-4 shadow-sm max-w-xl ml-auto border border-emerald-200">
+                    <div
+                      id="waExecutiveDisplay"
+                      class="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed font-sans"
+                    ></div>
+                    <div class="text-[10px] text-slate-500 text-right mt-2 flex items-center justify-end gap-1">
+                      <span>Siap dikirim via WhatsApp</span>
+                      <i data-lucide="check-check" class="w-3.5 h-3.5 text-blue-500"></i>
+                    </div>
+                  </div>
+                </div>
+                <textarea id="waExecutiveOutput" class="sr-only" readonly></textarea>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <p>Prototipe Sistem Layanan AI Agent — <strong>Sekretariat Direktorat Jenderal Perkeretaapian</strong></p>
+      <p>Ditenagai oleh Gemini API • Dirancang untuk Efisiensi Komunikasi Publik</p>
+    </div>
+  </footer>
+
+  <!-- MODAL: PANDUAN & EKSPOR GOOGLE AI STUDIO -->
+  <div id="aiStudioModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-slate-200 flex flex-col">
+      <div class="bg-djka-navy text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="font-bold text-base">Integrasi & Konfigurasi Google AI Studio</h3>
+        </div>
+        <button onclick="closeAiStudioModal()" class="text-slate-300 hover:text-white transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-sm text-slate-700 leading-relaxed">
+        <div class="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-djka-navy">
+          <strong>Status Aplikasi:</strong> Aplikasi ini sudah langsung terhubung dengan model <code>gemini-3-flash-preview</code> dan siap diuji coba langsung di halaman ini.
+        </div>
+
+        <div>
+          <h4 class="font-bold text-djka-navy text-sm mb-1">Cara Menjalankan di Google AI Studio Secara Mandiri:</h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-600">
+            <li>Buka <strong>aistudio.google.com</strong> dan pilih <strong>Create New Prompt (Chat / Structured Prompt)</strong>.</li>
+            <li>Pilih model <strong>Gemini 3 Flash Preview</strong> pada panel kanan.</li>
+            <li>Salin <strong>System Instructions</strong> di bawah ini dan tempelkan ke kolom <em>System Instructions</em> di Google AI Studio.</li>
+            <li>Unggah dokumen PDF SOP Kehumasan atau kumpulan Siaran Pers DJKA terdahulu ke dalam prompt sebagai referensi tetap.</li>
+          </ol>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-djka-navy">System Instructions (Siap Salin ke AI Studio):</span>
+            <button
+              onclick="copySection('systemPromptExport', this)"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition cursor-pointer"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Salin System Prompt</span>
+            </button>
+          </div>
+          <textarea
+            id="systemPromptExport"
+            rows="8"
+            readonly
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 text-xs font-mono text-slate-700 focus:outline-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex justify-end">
+        <button
+          onclick="closeAiStudioModal()"
+          class="px-4 py-2 rounded-xl bg-djka-navy text-white text-xs font-semibold hover:bg-djka-navyLight transition cursor-pointer"
+        >
+          Tutup Panduan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. DEFAULT DATA & KNOWLEDGE BASE DJKA
+    // ==========================================
+    const DEFAULT_KNOWLEDGE_BASE = `1. NADA & SIKAP KOMUNIKASI: Empatik, tenang, transparan, responsif, dan mengutamakan keselamatan serta kenyamanan penumpang kereta api.
+2. PRINSIP KEHATI-HATIAN INVESTIGASI: Dilarang menyalahkan pihak tertentu (operator, petugas lapangan, maupun masyarakat) sebelum hasil investigasi resmi atau pemeriksaan KNKT selesai. Gunakan frasa seperti "sedang dalam pemeriksaan lebih lanjut oleh tim teknis terkait".
+3. PENERJEMAHAN ISTILAH TEKNIS: Ubah istilah teknis perkeretaapian (seperti semboyan, wesel, LAA, anjlokan, gogosan) menjadi bahasa awam yang mudah dipahami masyarakat umum tanpa mengurangi akurasi fakta.
+4. STRUKTUR SIARAN PERS DJKA: Wajib mencantumkan lokasi kejadian, waktu, dampak layanan, langkah penanganan darurat di lapangan (evakuasi/rekayasa pola operasi), permohonan maaf atas ketidaknyamanan, dan imbauan resmi kepada pengguna jasa.
+5. KUTIPAN PEJABAT: Cantumkan ruang kutipan resmi untuk Direktur Jenderal Perkeretaapian atau Kepala Balai Teknik Perkeretaapian setempat.`;
+
+    const SAMPLE_CASE_DATA = `[14.12] Pak Budi (BTP Jakarta): Izin lapor pimpinan & rekan humas, baru saja pukul 13.55 WIB terjadi gangguan operasional pada sistem persinyalan dan aliran listrik atas (LAA) di petak jalan antara Stasiun Manggarai - Stasiun Sudirman jalur hilir.
+[14.15] Mas Dedi (Ops): Info awal dari PPKA, kabel LAA tertimpa dahan pohon tumbang akibat hujan angin kencang tadi jam 13.50. Saat ini perjalanan KRL lintas Bogor-Jakarta Kota dan Cikarang-Kampung Bandan mengalami antrean.
+[14.18] Pak Budi (BTP Jakarta): Tim gabungan BTP Jakarta bersama KAI Commuter sudah di lokasi sejak pukul 14.05 untuk evakuasi dahan dan perbaikan jaringan LAA. Penumpang KRL KA 1184 yang sempat tertahan sudah dievakuasi aman ke Stasiun Manggarai. Tidak ada korban jiwa maupun luka.
+[14.22] Mas Dedi (Ops): Sementara dilakukan rekayasa pola operasi sebagian perjalanan dari Bogor hanya sampai Manggarai. Estimasi normalisasi LAA sekitar 90 menit ke depan. Mohon bantuan humas untuk rilis cepat karena di Twitter/X sudah ramai video penumpang jalan kaki di pinggir rel.`;
+
+    const SYSTEM_PROMPT_TEMPLATE = `Anda adalah Asisten Ahli Kehumasan dan Komunikasi Publik pada Sekretariat Direktorat Jenderal Perkeretaapian (Setditjenka), Kementerian Perhubungan Republik Indonesia.
+Tugas Anda adalah membantu Tim Humas mengolah laporan teknis lapangan yang masih mentah/berantakan menjadi paket komunikasi krisis yang akurat, empatik, dan aman dari risiko polemik publik.
+
+Patuhi Pedoman Komunikasi Publik berikut:
+${DEFAULT_KNOWLEDGE_BASE}
+
+Anda WAJIB menghasilkan keluaran dalam format JSON yang terstruktur dengan 4 komponen utama:
+1. kronologi_5w1h: Ekstraksi fakta akurat dari laporan (what, who, when, where, why, how). Jika ada informasi yang belum tersedia di laporan mentah, tulis "Belum terkonfirmasi dalam laporan awal" (JANGAN mengarang data).
+2. naskah_publik: Terdiri dari 'holding_statement' (singkat, 2-3 paragraf untuk respons cepat media) dan 'siaran_pers' (lengkap dengan judul lugas, tempat/tanggal, kronologi yang mudah dipahami publik, langkah penanganan di lapangan, kutipan pejabat berwenang, serta penutup Biro/Bagian Humas Setditjen Perkeretaapian).
+3. analisis_sensitivitas: Terdiri dari 'tingkat_risiko' ("Rendah", "Sedang", atau "Tinggi"), 'ringkasan_risiko', dan daftar 'poin_sensitif' yang berisi kutipan/isu sensitif, potensi salah tafsir publik, dan rekomendasi kalimat yang lebih aman.
+4. ringkasan_wa_pimpinan: Pesan pengantar singkat, formal, dan terstruktur untuk dikirim via WhatsApp kepada Pimpinan guna meminta persetujuan (approval).`;
+
+    // Initialize UI on load
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      document.getElementById('knowledgeBaseRules').value = DEFAULT_KNOWLEDGE_BASE;
+      document.getElementById('systemPromptExport').value = SYSTEM_PROMPT_TEMPLATE;
+      updateCharCount();
+    });
+
+    // ==========================================
+    // 2. UI HELPER FUNCTIONS
+    // ==========================================
+    function updateCharCount() {
+      const text = document.getElementById('rawFieldData').value;
+      document.getElementById('charCount').textContent = `${text.length} karakter`;
+    }
+
+    function loadSampleCase() {
+      document.getElementById('rawFieldData').value = SAMPLE_CASE_DATA;
+      document.getElementById('contextType').selectedIndex = 0;
+      document.getElementById('gdocsLink').value = 'https://docs.google.com/document/d/1DJKA_Rilis_Gangguan_LAA_Manggarai/edit';
+      updateCharCount();
+      showToast('Contoh kasus gangguan operasional berhasil dimuat.');
+    }
+
+    function clearInput() {
+      document.getElementById('rawFieldData').value = '';
+      document.getElementById('gdocsLink').value = '';
+      updateCharCount();
+    }
+
+    function toggleKnowledgeBase() {
+      const content = document.getElementById('kbContent');
+      const chevron = document.getElementById('kbChevron');
+      content.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+
+    function resetKnowledgeBase() {
+      document.getElementById('knowledgeBaseRules').value = DEFAULT_KNOWLEDGE_BASE;
+      showToast('Pedoman kehumasan dikembalikan ke pengaturan awal.');
+    }
+
+    function switchTab(tabIndex) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        const currentIdx = idx + 1;
+        if (currentIdx === tabIndex) {
+          btn.classList.remove('border-transparent', 'text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+          btn.classList.add('border-djka-orange', 'bg-white', 'text-djka-navy');
+        } else {
+          btn.classList.add('border-transparent', 'text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+          btn.classList.remove('border-djka-orange', 'bg-white', 'text-djka-navy');
+        }
+      });
+
+      // Update tab panels
+      document.querySelectorAll('.tab-panel').forEach((panel, idx) => {
+        if (idx + 1 === tabIndex) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = message;
+      toast.classList.remove('hidden');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    function copySection(elementId, btnElement) {
+      const el = document.getElementById(elementId);
+      if (!el || !el.value) {
+        showToast('Belum ada teks untuk disalin.');
+        return;
+      }
+
+      // Reliable clipboard copy using execCommand fallback for iframe compatibility
+      el.classList.remove('sr-only');
+      el.select();
+      el.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('Tersalin ke clipboard!');
+        if (btnElement) {
+          const originalHTML = btnElement.innerHTML;
+          btnElement.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i><span>Tersalin!</span>`;
+          lucide.createIcons();
+          setTimeout(() => {
+            btnElement.innerHTML = originalHTML;
+            lucide.createIcons();
+          }, 2000);
+        }
+      } catch (err) {
+        showToast('Gagal menyalin teks.');
+      }
+      el.classList.add('sr-only');
+      window.getSelection().removeAllRanges();
+    }
+
+    function copyAndOpenGoogleDocs() {
+      copySection('pressReleaseOutput', null);
+      showToast('Naskah Siaran Pers tersalin! Membuka Google Docs baru...');
+      setTimeout(() => {
+        window.open('https://docs.new', '_blank', 'noopener,noreferrer');
+      }, 600);
+    }
+
+    function openAiStudioModal() {
+      document.getElementById('aiStudioModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAiStudioModal() {
+      document.getElementById('aiStudioModal').classList.add('hidden');
+    }
+
+    // ==========================================
+    // 3. GEMINI API INTEGRATION (WITH BACKOFF)
+    // ==========================================
+    async function fetchWithRetry(url, options, maxRetries = 4) {
+      let delay = 1000;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, options);
+          if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errBody}`);
+          }
+          return await response.json();
+        } catch (error) {
+          if (attempt === maxRetries) {
+            throw error;
+          }
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    async function generatePRPackage() {
+      const rawData = document.getElementById('rawFieldData').value.trim();
+      const contextType = document.getElementById('contextType').value;
+      const kbRules = document.getElementById('knowledgeBaseRules').value.trim();
+      const gdocsLink = document.getElementById('gdocsLink').value.trim() || '[Tautan Google Docs menyusul]';
+
+      if (!rawData) {
+        showToast('Harap masukkan data lapangan atau klik "Muat Contoh Kasus" terlebih dahulu.');
+        document.getElementById('rawFieldData').focus();
+        return;
+      }
+
+      // Switch UI to Loading State
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('resultsContainer').classList.add('hidden');
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('statusBadge').textContent = 'Sedang Memproses...';
+      document.getElementById('statusBadge').className = 'text-[11px] px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-200 font-medium';
+
+      const systemInstructionText = `Anda adalah Asisten Ahli Kehumasan dan Komunikasi Publik pada Sekretariat Direktorat Jenderal Perkeretaapian (Setditjenka), Kementerian Perhubungan RI.
+Tugas Anda adalah membantu Tim Humas mengolah laporan teknis lapangan yang masih mentah menjadi 4 keluaran terstruktur dalam Bahasa Indonesia baku, empatik, dan aman secara komunikasi publik.
+
+PEDOMAN KOMUNIKASI & KEBIJAKAN INSTANSI:
+${kbRules}
+
+ATURAN KETAT:
+- JANGAN mengarang fakta, angka, nama pejabat, atau jam kejadian yang tidak tercantum dalam laporan lapangan. Jika informasi belum ada, tuliskan secara jujur bahwa hal tersebut masih dalam konfirmasi/pemeriksaan tim di lapangan.
+- Pastikan Holding Statement ringkas (maksimal 2-3 paragraf pendek) untuk merespons pertanyaan cepat wartawan.
+- Pastikan Siaran Pers lengkap dengan: Judul yang informatif & menenangkan, tempat dan tanggal rilis, kronologi yang sudah diterjemahkan ke bahasa publik, upaya penanganan di lapangan, kutipan resmi (gunakan placeholder "[Nama Pejabat / Kepala BTP ...]" jika nama tidak disebut di data mentah), permohonan maaf, dan footer resmi Bagian Hubungan Masyarakat Sekretariat Direktorat Jenderal Perkeretaapian.
+- Pada bagian Ringkasan WA Pimpinan, sertakan tautan kolaborasi berikut: ${gdocsLink}`;
+
+      const userPrompt = `Kategori & Sensitivitas Awal: ${contextType}
+
+Laporan Mentah Lapangan / Log WhatsApp:
+"""
+${rawData}
+"""
+
+Silakan analisis laporan di atas dan susun paket lengkap komunikasi publik Setditjen Perkeretaapian sesuai skema JSON yang diminta.`;
+
+      const apiKey = ""; // Disediakan otomatis oleh environment runtime
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: userPrompt }]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemInstructionText }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              kronologi_5w1h: {
+                type: "OBJECT",
+                properties: {
+                  what: { type: "STRING", description: "Apa kejadian atau isu yang terjadi" },
+                  who: { type: "STRING", description: "Siapa pihak yang terlibat atau terdampak" },
+                  when: { type: "STRING", description: "Kapan waktu kejadian dan penanganan" },
+                  where: { type: "STRING", description: "Di mana lokasi spesifik kejadian" },
+                  why: { type: "STRING", description: "Mengapa kejadian tersebut terjadi (sesuai fakta awal)" },
+                  how: { type: "STRING", description: "Bagaimana kronologi dan langkah penanganan di lapangan" }
+                },
+                required: ["what", "who", "when", "where", "why", "how"]
+              },
+              naskah_publik: {
+                type: "OBJECT",
+                properties: {
+                  holding_statement: {
+                    type: "STRING",
+                    description: "Pernyataan singkat siap kutip untuk respons cepat media di situasi krisis"
+                  },
+                  siaran_pers: {
+                    type: "STRING",
+                    description: "Naskah siaran pers resmi lengkap sesuai kaidah kehumasan DJKA"
+                  }
+                },
+                required: ["holding_statement", "siaran_pers"]
+              },
+              analisis_sensitivitas: {
+                type: "OBJECT",
+                properties: {
+                  tingkat_risiko: {
+                    type: "STRING",
+                    enum: ["Rendah", "Sedang", "Tinggi"],
+                    description: "Tingkat sensitivitas isu publik"
+                  },
+                  ringkasan_risiko: {
+                    type: "STRING",
+                    description: "Penjelasan singkat mengapa isu ini memiliki tingkat risiko tersebut"
+                  },
+                  poin_sensitif: {
+                    type: "ARRAY",
+                    items: {
+                      type: "OBJECT",
+                      properties: {
+                        frasa_atau_isu: { type: "STRING", description: "Istilah teknis atau kalimat mentah yang berisiko" },
+                        potensi_salah_tafsir: { type: "STRING", description: "Bagaimana masyarakat/media bisa salah mengartikan hal ini" },
+                        rekomendasi_kalimat: { type: "STRING", description: "Saran redaksi kalimat yang lebih aman dan empatik" }
+                      },
+                      required: ["frasa_atau_isu", "potensi_salah_tafsir", "rekomendasi_kalimat"]
+                    }
+                  }
+                },
+                required: ["tingkat_risiko", "ringkasan_risiko", "poin_sensitif"]
+              },
+              ringkasan_wa_pimpinan: {
+                type: "STRING",
+                description: "Pesan singkat formal siap kirim via WhatsApp untuk persetujuan pimpinan"
+              }
+            },
+            required: ["kronologi_5w1h", "naskah_publik", "analisis_sensitivitas", "ringkasan_wa_pimpinan"]
+          }
+        }
+      };
+
+      try {
+        const result = await fetchWithRetry(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const rawJsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawJsonText) {
+          throw new Error("Respons dari AI kosong atau tidak sesuai format.");
+        }
+
+        const parsedData = JSON.parse(rawJsonText);
+        renderResults(parsedData);
+
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('resultsContainer').classList.remove('hidden');
+        document.getElementById('statusBadge').textContent = 'Selesai Disusun';
+        document.getElementById('statusBadge').className = 'text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-200 font-medium';
+        switchTab(1);
+        showToast('Paket naskah kehumasan berhasil disusun!');
+      } catch (error) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent =
+          `Detail teknis: ${error.message}. Pastikan koneksi internet stabil atau coba ekspor System Prompt ke Google AI Studio.`;
+        document.getElementById('statusBadge').textContent = 'Terjadi Kendala';
+        document.getElementById('statusBadge').className = 'text-[11px] px-2.5 py-1 rounded-full bg-red-500/20 text-red-200 font-medium';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ==========================================
+    // 4. RENDER STRUCTURED OUTPUTS TO TABS
+    // ==========================================
+    function renderResults(data) {
+      // --- TAB 1: KRONOLOGI 5W+1H ---
+      const k = data.kronologi_5w1h;
+      const items5W1H = [
+        { label: 'WHAT (Apa yang Terjadi)', value: k.what, icon: 'alert-circle' },
+        { label: 'WHEN (Kapan Kejadian)', value: k.when, icon: 'clock' },
+        { label: 'WHERE (Lokasi Kejadian)', value: k.where, icon: 'map-pin' },
+        { label: 'WHO (Pihak Terdampak/Terlibat)', value: k.who, icon: 'users' },
+        { label: 'WHY (Penyebab Awal)', value: k.why, icon: 'help-circle' },
+        { label: 'HOW (Kronologi & Penanganan)', value: k.how, icon: 'wrench' }
+      ];
+
+      const cardsContainer = document.getElementById('kronologiCards');
+      cardsContainer.innerHTML = items5W1H.map(item => `
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="flex items-center gap-1.5 text-[11px] font-bold text-djka-navy uppercase tracking-wide">
+            <i data-lucide="${item.icon}" class="w-3.5 h-3.5 text-djka-orange"></i>
+            <span>${item.label}</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-800 leading-relaxed">${escapeHtml(item.value)}</p>
+        </div>
+      `).join('');
+
+      document.getElementById('kronologiText').value = items5W1H
+        .map(i => `${i.label}:\n${i.value}`)
+        .join('\n\n');
+
+      // --- TAB 2: HOLDING STATEMENT & SIARAN PERS ---
+      const holdingText = data.naskah_publik.holding_statement;
+      const pressText = data.naskah_publik.siaran_pers;
+
+      document.getElementById('holdingStatementDisplay').textContent = holdingText;
+      document.getElementById('holdingStatementOutput').value = holdingText;
+
+      document.getElementById('pressReleaseDisplay').textContent = pressText;
+      document.getElementById('pressReleaseOutput').value = pressText;
+
+      // --- TAB 3: FILTER SENSITIVITAS ISU ---
+      const sens = data.analisis_sensitivitas;
+      const riskBadgeContainer = document.getElementById('riskLevelContainer');
+      let badgeStyle = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      if (sens.tingkat_risiko === 'Sedang') {
+        badgeStyle = 'bg-amber-100 text-amber-800 border-amber-300';
+      } else if (sens.tingkat_risiko === 'Tinggi') {
+        badgeStyle = 'bg-red-100 text-red-800 border-red-300';
+      }
+
+      riskBadgeContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${badgeStyle}">
+          <span class="w-2 h-2 rounded-full bg-current"></span>
+          Tingkat Risiko: ${escapeHtml(sens.tingkat_risiko)}
+        </span>
+      `;
+
+      document.getElementById('riskSummaryBox').innerHTML = `
+        <strong class="text-djka-navy block mb-1">Evaluasi Umum Sensitivitas Publik:</strong>
+        ${escapeHtml(sens.ringkasan_risiko)}
+      `;
+
+      const riskListEl = document.getElementById('riskItemsList');
+      if (sens.poin_sensitif && sens.poin_sensitif.length > 0) {
+        riskListEl.innerHTML = sens.poin_sensitif.map((item, idx) => `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-2.5 shadow-2xs">
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-[11px] font-bold shrink-0">
+                Poin #${idx + 1}
+              </span>
+              <p class="text-xs sm:text-sm font-semibold text-slate-800">
+                "${escapeHtml(item.frasa_atau_isu)}"
+              </p>
+            </div>
+            <p class="text-xs text-slate-600 pl-2 border-l-2 border-amber-400">
+              <strong class="text-slate-700">Potensi Salah Tafsir Publik:</strong> ${escapeHtml(item.potensi_salah_tafsir)}
+            </p>
+            <div class="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950">
+              <strong class="text-emerald-800 block mb-0.5">Rekomendasi Redaksi Lebih Aman:</strong>
+              "${escapeHtml(item.rekomendasi_kalimat)}"
+            </div>
+          </div>
+        `).join('');
+      } else {
+        riskListEl.innerHTML = `
+          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+            Tidak ditemukan frasa berisiko tinggi pada laporan ini. Naskah relatif aman untuk dipublikasikan.
+          </div>
+        `;
+      }
+
+      // --- TAB 4: RINGKASAN WA PIMPINAN ---
+      const waText = data.ringkasan_wa_pimpinan;
+      document.getElementById('waExecutiveDisplay').textContent = waText;
+      document.getElementById('waExecutiveOutput').value = waText;
+
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

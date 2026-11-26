@@ -1,0 +1,6 @@
+{
+  "name": "Asisten Kehumasan Setditjen Perkeretaapian",
+  "description": "Asisten Kehumasan & Komunikasi Publik Setditjen Perkeretaapian untuk mengolah laporan teknis lapangan menjadi kronologi 5W+1H, holding statement, siaran pers, analisis sensitivitas isu, dan pesan pengantar WhatsApp pimpinan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
