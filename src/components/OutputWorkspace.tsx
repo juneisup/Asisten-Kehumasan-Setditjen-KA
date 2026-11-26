@@ -383,6 +383,38 @@ export function OutputWorkspace({
                     {result.naskah_publik.siaran_pers}
                   </div>
                 </div>
+
+                {/* Referensi Gaya Bahasa & Narasi Portal Berita */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="font-bold text-djka-navy">
+                      Acuan Gaya Bahasa &amp; Narasi Portal Berita
+                    </span>
+                    <span className="text-slate-500">
+                      Tempo.co &middot; Kompas.com &middot; Detik.com
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Draf disusun mengikuti standar piramida terbalik, teras berita 5W+1H, dan alur kronologi jurnalistik portal berita nasional tanpa mencampur fakta dari artikel eksternal.
+                  </p>
+                  {result.referensi_portal && result.referensi_portal.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-x-3 gap-y-1.5">
+                      {result.referensi_portal.map((ref) => (
+                        <a
+                          key={ref.uri}
+                          href={ref.uri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-djka-navy hover:text-djka-orange hover:underline max-w-[240px] truncate"
+                          title={ref.title}
+                        >
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                          <span className="truncate">{ref.title}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

@@ -39,6 +39,7 @@ export default function App() {
   const [gdocsLink, setGdocsLink] = useState<string>('');
   const [kbRules, setKbRules] = useState<string>(DEFAULT_KNOWLEDGE_BASE);
   const [isKbOpen, setIsKbOpen] = useState<boolean>(false);
+  const [usePortalStyleRef, setUsePortalStyleRef] = useState<boolean>(true);
 
   const [status, setStatus] = useState<WorkspaceStatus>('idle');
   const [result, setResult] = useState<PRPackageResult | null>(null);
@@ -232,6 +233,7 @@ export default function App() {
           contextType,
           kbRules: kbRules.trim(),
           gdocsLink: gdocsLink.trim(),
+          usePortalStyleRef,
         }),
       });
 
@@ -467,6 +469,23 @@ export default function App() {
                       className="w-full rounded-lg border border-slate-300 pl-9 pr-3.5 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-djka-navy/20 focus:border-djka-navy transition"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50/70 cursor-pointer hover:bg-slate-100/70 transition">
+                    <input
+                      type="checkbox"
+                      checked={usePortalStyleRef}
+                      onChange={(e) => setUsePortalStyleRef(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-djka-navy focus:ring-djka-navy/30 cursor-pointer shrink-0"
+                    />
+                    <span className="text-xs text-slate-700 leading-relaxed">
+                      <strong className="text-djka-navy block">
+                        Gunakan sampel gaya bahasa &amp; narasi portal berita
+                      </strong>
+                      Acuan struktur piramida terbalik &amp; gaya redaksi dari Tempo.co, Kompas.com, dan Detik.com.
+                    </span>
+                  </label>
                 </div>
 
                 <button

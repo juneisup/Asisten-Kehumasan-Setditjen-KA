@@ -31,6 +31,7 @@ export interface PRPackageResult {
   naskah_publik: NaskahPublik;
   analisis_sensitivitas: AnalisisSensitivitas;
   ringkasan_wa_pimpinan: string;
+  referensi_portal?: GroundingSource[];
 }
 
 export type WorkspaceStatus = 'idle' | 'loading' | 'success' | 'error';

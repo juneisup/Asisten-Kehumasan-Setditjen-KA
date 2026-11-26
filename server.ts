@@ -17,7 +17,17 @@ interface GenerateBody {
   contextType?: string;
   kbRules?: string;
   gdocsLink?: string;
+  usePortalStyleRef?: boolean;
 }
+
+interface PortalStyleSampleResult {
+  styleGuideText: string;
+  sources: Array<{ title: string; uri: string }>;
+  fetchedAt: number;
+}
+
+const PORTAL_STYLE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+let portalStyleCache: PortalStyleSampleResult | null = null;
 
 interface NewsMonitorBody {
   keywords?: string[];
@@ -205,6 +215,65 @@ function formatGeminiError(error: unknown): { status: number; message: string } 
   };
 }
 
+async function getPortalNarrativeSamples(
+  ai: GoogleGenAI
+): Promise<{ styleGuideText: string; sources: Array<{ title: string; uri: string }> }> {
+  if (
+    portalStyleCache &&
+    Date.now() - portalStyleCache.fetchedAt < PORTAL_STYLE_CACHE_TTL_MS
+  ) {
+    return {
+      styleGuideText: portalStyleCache.styleGuideText,
+      sources: portalStyleCache.sources,
+    };
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents:
+        'Cari 3 contoh artikel berita perkeretaapian Indonesia (DJKA, KAI, atau KRL) dari portal tempo.co, kompas.com, dan detik.com. ' +
+        'Sarikan pola gaya bahasa, struktur paragraf pembuka (lead 5W+1H), cara menuliskan kronologi/dampak layanan, dan gaya atribusi kutipan pejabat dari masing-masing portal agar bisa dijadikan contoh gaya narasi siaran pers dan holding statement (tanpa menyalin fakta kejadian spesifiknya).',
+      config: {
+        systemInstruction:
+          'Anda adalah editor gaya bahasa jurnalistik Indonesia. Gunakan Google Search untuk meninjau artikel nyata dari site:tempo.co, site:kompas.com, dan site:detik.com tentang perkeretaapian. ' +
+          'Berikan ringkasan pola gaya bahasa, struktur lead, dan contoh formulasi kalimat khas ketiga portal tersebut dalam 3 poin singkat.',
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const styleGuideText = (response.text ?? '').trim();
+    const rawChunks = (response.candidates?.[0]?.groundingMetadata?.groundingChunks ??
+      []) as GroundingChunk[];
+
+    const sources = rawChunks
+      .map((chunk) => chunk.web)
+      .filter((web): web is { uri: string; title?: string } => Boolean(web && isValidHttpUrl(web.uri)))
+      .map((web) => ({
+        uri: web.uri.trim(),
+        title: (web.title ?? web.uri).trim(),
+      }))
+      .filter((src, idx, arr) => arr.findIndex((s) => s.uri === src.uri) === idx)
+      .slice(0, 6);
+
+    if (styleGuideText) {
+      portalStyleCache = {
+        styleGuideText,
+        sources,
+        fetchedAt: Date.now(),
+      };
+      return { styleGuideText, sources };
+    }
+  } catch (err) {
+    console.warn(
+      'Optional portal style sampling skipped:',
+      err instanceof Error ? err.message : err
+    );
+  }
+
+  return { styleGuideText: '', sources: [] };
+}
+
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
@@ -221,6 +290,7 @@ async function startServer() {
       typeof body.gdocsLink === 'string' && body.gdocsLink.trim()
         ? body.gdocsLink.trim()
         : '[Tautan Google Docs menyusul]';
+    const usePortalStyleRef = body.usePortalStyleRef !== false;
 
     if (!rawData) {
       res.status(400).json({ error: 'Laporan mentah lapangan tidak boleh kosong.' });
@@ -238,16 +308,33 @@ async function startServer() {
 
     const ai = createGeminiClient(apiKey);
 
+    const portalSample = usePortalStyleRef
+      ? await getPortalNarrativeSamples(ai)
+      : { styleGuideText: '', sources: [] };
+
+    const portalStyleSection = usePortalStyleRef
+      ? `\nACUAN GAYA BAHASA & NARASI PORTAL BERITA (Tempo.co, Kompas.com, Detik.com):
+- Gunakan gaya jurnalistik media arus utama Indonesia (Tempo.co, Kompas.com, Detik.com) saat menyusun Holding Statement dan Siaran Pers:
+  * Kompas.com: Awali dengan teras berita (lead) piramida terbalik yang padat unsur 5W+1H, gunakan bahasa Indonesia baku (EYD V), tenang, berimbang, dan transisi antarparagraf yang mengalir.
+  * Tempo.co: Sajikan alur kronologi secara runut, lugas, presisi waktu (WIB) dan lokasi, berbasis verifikasi, serta hindari kalimat klise atau birokratis yang kaku.
+  * Detik.com: Gunakan kalimat aktif yang ringkas, mudah dipindai wartawan, dan langsung menyorot dampak operasional bagi penumpang serta langkah cepat penanganan di lapangan.
+- PENTING: Portal berita hanya dijadikan acuan GAYA BAHASA dan STRUKTUR NARASI. Jangan mencampur fakta berita eksternal ke dalam kronologi insiden yang dilaporkan pengguna.${
+          portalSample.styleGuideText
+            ? `\n\nSAMPEL POLA NARASI TERKINI DARI TEMPO.CO, KOMPAS.COM, & DETIK.COM:\n${portalSample.styleGuideText}`
+            : ''
+        }`
+      : '';
+
     const systemInstructionText = `Anda adalah Asisten Ahli Kehumasan dan Komunikasi Publik pada Sekretariat Direktorat Jenderal Perkeretaapian (Setditjenka), Kementerian Perhubungan RI.
 Tugas Anda adalah membantu Tim Humas mengolah laporan teknis lapangan yang masih mentah menjadi 4 keluaran terstruktur dalam Bahasa Indonesia baku, empatik, dan aman secara komunikasi publik.
 
 PEDOMAN KOMUNIKASI & KEBIJAKAN INSTANSI:
-${kbRules}
+${kbRules}${portalStyleSection}
 
 ATURAN KETAT:
 - JANGAN mengarang fakta, angka, nama pejabat, atau jam kejadian yang tidak tercantum dalam laporan lapangan. Jika informasi belum ada, tuliskan secara jujur bahwa hal tersebut masih dalam konfirmasi atau pemeriksaan tim di lapangan.
-- Pastikan Holding Statement ringkas (maksimal 2-3 paragraf pendek) untuk merespons pertanyaan cepat wartawan.
-- Pastikan Siaran Pers lengkap dengan: Judul yang informatif dan menenangkan, tempat dan tanggal rilis, kronologi yang sudah diterjemahkan ke bahasa publik, upaya penanganan di lapangan, kutipan resmi (gunakan placeholder "[Nama Pejabat / Kepala BTP ...]" jika nama tidak disebut di data mentah), permohonan maaf, serta penutup resmi Bagian Hubungan Masyarakat Sekretariat Direktorat Jenderal Perkeretaapian.
+- Pastikan Holding Statement ringkas (maksimal 2-3 paragraf pendek bergaya breaking news lead ala Detik.com & Kompas.com) untuk merespons pertanyaan cepat wartawan.
+- Pastikan Siaran Pers lengkap dengan: Judul yang lugas dan informatif ala portal berita nasional, tempat dan tanggal rilis, lead 5W+1H piramida terbalik, kronologi yang sudah diterjemahkan ke bahasa publik, upaya penanganan di lapangan, kutipan resmi (gunakan placeholder "[Nama Pejabat / Kepala BTP ...]" jika nama tidak disebut di data mentah), permohonan maaf, serta penutup resmi Bagian Hubungan Masyarakat Sekretariat Direktorat Jenderal Perkeretaapian.
 - Pada bagian Ringkasan WA Pimpinan, sertakan tautan kolaborasi berikut: ${gdocsLink}`;
 
     const userPrompt = `Kategori & Sensitivitas Awal: ${contextType}
@@ -272,7 +359,10 @@ Silakan analisis laporan di atas dan susun paket lengkap komunikasi publik Setdi
         return;
       }
 
-      const parsed = JSON.parse(rawJsonText);
+      const parsed = JSON.parse(rawJsonText) as Record<string, unknown>;
+      if (usePortalStyleRef && portalSample.sources.length > 0) {
+        parsed.referensi_portal = portalSample.sources;
+      }
       res.json(parsed);
     } catch (error) {
       const formatted = formatGeminiError(error);
