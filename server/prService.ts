@@ -213,6 +213,11 @@ function formatGeminiError(error: unknown): { status: number; message: string } 
   };
 }
 
+function getGeminiApiKey(): string | undefined {
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+  return proc?.env?.GEMINI_API_KEY;
+}
+
 function parseRequestBody<T>(rawBody: unknown): T {
   if (typeof rawBody === 'string') {
     try {
@@ -322,7 +327,7 @@ export async function handleGenerateRequest(
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
     res.status(500).json({
       error:
@@ -411,7 +416,7 @@ export async function handleNewsMonitorRequest(
       ? body.keywords.filter((k): k is string => typeof k === 'string' && k.trim().length > 0)
       : ['DJKA', 'kereta api', 'KRL', 'KAI'];
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
     res.status(500).json({
       error:
