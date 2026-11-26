@@ -149,6 +149,18 @@ export default function App() {
     showToast('Kata kunci dikembalikan ke pengaturan default.');
   };
 
+  const parseJsonResponse = async <T,>(response: Response): Promise<T & { error?: string }> => {
+    const rawText = await response.text();
+    try {
+      return JSON.parse(rawText) as T & { error?: string };
+    } catch {
+      const preview = rawText.replace(/<[^>]+>/g, ' ').trim().slice(0, 140);
+      throw new Error(
+        `Server mengembalikan respons non-JSON (HTTP ${response.status})${preview ? `: ${preview}` : '.'}`
+      );
+    }
+  };
+
   const handleFetchNews = async () => {
     setNewsStatus('loading');
     setNewsError('');
@@ -162,7 +174,7 @@ export default function App() {
         }),
       });
 
-      const payload = (await response.json()) as Partial<NewsMonitorResult> & { error?: string };
+      const payload = await parseJsonResponse<Partial<NewsMonitorResult>>(response);
       if (!response.ok) {
         throw new Error(payload.error || `Gagal mengambil berita (${response.status})`);
       }
@@ -237,7 +249,7 @@ export default function App() {
         }),
       });
 
-      const payload = (await response.json()) as Partial<PRPackageResult> & { error?: string };
+      const payload = await parseJsonResponse<Partial<PRPackageResult>>(response);
 
       if (!response.ok) {
         throw new Error(payload.error || `Permintaan gagal dengan status ${response.status}`);
