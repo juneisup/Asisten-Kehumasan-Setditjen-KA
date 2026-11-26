@@ -197,7 +197,7 @@ function formatGeminiError(error: unknown): { status: number; message: string } 
     return {
       status: 429,
       message:
-        'Kuota permintaan Gemini API saat ini telah melampaui batas (429 RESOURCE_EXHAUSTED). Silakan periksa kuota/billing API key atau coba lagi beberapa saat.',
+        'Kuota permintaan Gemini API saat ini telah melampaui batas (429 RESOURCE_EXHAUSTED). Silakan periksa kuota atau pilih API key dengan billing aktif di panel Settings > Secrets.',
     };
   }
   if (raw.includes('API_KEY_INVALID') || raw.includes('PERMISSION_DENIED') || raw.includes('403')) {
@@ -232,9 +232,10 @@ function parseRequestBody<T>(rawBody: unknown): T {
   return {} as T;
 }
 
-async function getPortalNarrativeSamples(
-  ai: GoogleGenAI
-): Promise<{ styleGuideText: string; sources: Array<{ title: string; uri: string }> }> {
+function getCachedPortalNarrativeSamples(): {
+  styleGuideText: string;
+  sources: Array<{ title: string; uri: string }>;
+} {
   if (
     portalStyleCache &&
     Date.now() - portalStyleCache.fetchedAt < PORTAL_STYLE_CACHE_TTL_MS
@@ -244,59 +245,6 @@ async function getPortalNarrativeSamples(
       sources: portalStyleCache.sources,
     };
   }
-
-  try {
-    const searchPromise = ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
-      contents:
-        'Cari 3 contoh artikel berita perkeretaapian Indonesia (DJKA, KAI, atau KRL) dari portal tempo.co, kompas.com, dan detik.com. ' +
-        'Sarikan pola gaya bahasa, struktur paragraf pembuka (lead 5W+1H), cara menuliskan kronologi/dampak layanan, dan gaya atribusi kutipan pejabat dari masing-masing portal agar bisa dijadikan contoh gaya narasi siaran pers dan holding statement (tanpa menyalin fakta kejadian spesifiknya).',
-      config: {
-        systemInstruction:
-          'Anda adalah editor gaya bahasa jurnalistik Indonesia. Gunakan Google Search untuk meninjau artikel nyata dari site:tempo.co, site:kompas.com, dan site:detik.com tentang perkeretaapian. ' +
-          'Berikan ringkasan pola gaya bahasa, struktur lead, dan contoh formulasi kalimat khas ketiga portal tersebut dalam 3 poin singkat.',
-        tools: [{ googleSearch: {} }],
-      },
-    });
-
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 4000);
-    });
-
-    const response = await Promise.race([searchPromise, timeoutPromise]);
-    if (!response) {
-      return { styleGuideText: '', sources: [] };
-    }
-
-    const styleGuideText = (response.text ?? '').trim();
-    const rawChunks = (response.candidates?.[0]?.groundingMetadata?.groundingChunks ??
-      []) as GroundingChunk[];
-
-    const sources = rawChunks
-      .map((chunk) => chunk.web)
-      .filter((web): web is { uri: string; title?: string } => Boolean(web && isValidHttpUrl(web.uri)))
-      .map((web) => ({
-        uri: web.uri.trim(),
-        title: (web.title ?? web.uri).trim(),
-      }))
-      .filter((src, idx, arr) => arr.findIndex((s) => s.uri === src.uri) === idx)
-      .slice(0, 6);
-
-    if (styleGuideText) {
-      portalStyleCache = {
-        styleGuideText,
-        sources,
-        fetchedAt: Date.now(),
-      };
-      return { styleGuideText, sources };
-    }
-  } catch (err) {
-    console.warn(
-      'Optional portal style sampling skipped:',
-      err instanceof Error ? err.message : err
-    );
-  }
-
   return { styleGuideText: '', sources: [] };
 }
 
@@ -339,7 +287,7 @@ export async function handleGenerateRequest(
   const ai = createGeminiClient(apiKey);
 
   const portalSample = usePortalStyleRef
-    ? await getPortalNarrativeSamples(ai)
+    ? getCachedPortalNarrativeSamples()
     : { styleGuideText: '', sources: [] };
 
   const portalStyleSection = usePortalStyleRef
@@ -542,6 +490,18 @@ Pastikan setiap item menyertakan URL artikel dari hasil penelusuran.`;
             typeof item.suggestedContext === 'string' ? item.suggestedContext.trim() : undefined,
         };
       });
+
+    if (normalizedItems.length > 0) {
+      const sampleText = normalizedItems
+        .slice(0, 3)
+        .map((item) => `- (${item.source}) ${item.title}: ${item.summary}`)
+        .join('\n');
+      portalStyleCache = {
+        styleGuideText: sampleText,
+        sources: groundingSources.slice(0, 6),
+        fetchedAt: Date.now(),
+      };
+    }
 
     res.status(200).json({
       items: normalizedItems,
